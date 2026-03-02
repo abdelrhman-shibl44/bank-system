@@ -5,7 +5,8 @@
 #include "./mylib.h"
 using namespace std;
 
-enum enOptions {SHOW = 1, ADD, DELETE, UPDATE, FIND, EXIST};
+enum enOptions {SHOW = 1, ADD, DELETE, UPDATE, FIND, TRANSACTIONS, EXIST};
+enum enTransactions {DEPOSIT = 1, WITHDRAW, TOTALBALANCE, MAINMENU};
 struct stClientData {
     string accountNumber;
     string pinCode;
@@ -198,6 +199,62 @@ void backToMenu(){
     showMenuScreen();
 }
 
+
+void addDeposite(string accountNumber, double amount, vector<stClientData> &vClients){
+    for(stClientData &client: vClients){
+        if(convertTextToLower(client.accountNumber) == convertTextToLower(accountNumber)){  
+            client.Balance = client.Balance + amount;
+        }
+    }
+}
+void deposit(){
+    header("Deposit Screen");
+    string accountNumber = readString("please enter account number? ");
+    vector<stClientData> vClients = readDataFromFile(fileName);
+    if(findClient(accountNumber)){
+        double depositAmount = readNumber("Please enter deposite amount? ");
+        char answer = readChar("Are you sure you want to perform this transaction? ");
+        if(tolower(answer) == 'y'){
+            addDeposite(accountNumber, depositAmount, vClients);
+            saveClientsToFile(vClients);
+            cout << "Deposit made successfully :)" << endl;
+        }
+    }else{
+        cout << "Account not exist try again :(" << endl;
+    }
+}
+
+
+void chooseTransaction(short number){
+    switch ((enTransactions) number){
+        case enTransactions::DEPOSIT :
+            deposit();
+            break;
+        case enTransactions::WITHDRAW :
+            break;
+        case enTransactions::TOTALBALANCE :
+            break;
+        case enTransactions::MAINMENU :
+            showMenuScreen();
+            break;
+        
+        default:
+            break;
+    }
+}
+void showTransactionMenu(){
+    cout <<"==================================================\n";
+    cout << "\t\tTransactions Menu Screen\n";
+    cout <<"==================================================\n";
+    cout << "\t[1] Deposit.\n"
+            "\t[2] Withdraw.\n"
+            "\t[3] Total Balances.\n"
+            "\t[4] Main Menu.\n";
+    cout <<"==================================================\n";
+    short chosenOption = readNumber("Choose what do you want to do? [1 to 4]?");
+    chooseTransaction(chosenOption);
+}
+
 short chooseFromMenu(short number){
     switch ((enOptions) number){
         case enOptions::SHOW: 
@@ -220,6 +277,10 @@ short chooseFromMenu(short number){
             updateClient();
             backToMenu();
             break;
+            case enOptions::TRANSACTIONS:
+            showTransactionMenu();
+            backToMenu();
+            break;
         case enOptions::EXIST: 
             cout << "Good Bye :(" << endl;
         default:
@@ -236,7 +297,8 @@ void showMenuScreen(){
             "\t[3] Delete Client.\n"
             "\t[4] Update Client Info.\n"
             "\t[5] Find Client.\n"
-            "\t[6] Exist." << endl;
+            "\t[6] Transactions.\n"
+            "\t[7] Exist." << endl;
     cout <<"==================================================\n";
     short chosenOption = readNumber("Choose what do you want to do? [1 to 6]?");
     chooseFromMenu(chosenOption);
