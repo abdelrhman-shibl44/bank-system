@@ -15,25 +15,14 @@ struct stClientData {
     bool markforDeletion = false;
 };
 const string fileName = "Clients.txt";
-void showMenuScreen(){
-    cout <<"==================================================\n";
-    cout << "\t\tMain Menu Screen\n";
-    cout <<"==================================================\n";
-    cout << "\t[1] Show Client List.\n"
-            "\t[2] Add New Client.\n"
-            "\t[3] Delete Client.\n"
-            "\t[4] Update Client Info.\n"
-            "\t[5] Find Client.\n"
-            "\t[6] Exist." << endl;
-    cout <<"==================================================\n";
-}
 
-void readClientData(stClientData &client){
+stClientData readClientData(stClientData &client){
     client.accountNumber =  readString("Please Enter client account number? ");
     client.pinCode =  readString("Please Enter client pinCode? ");
     client.name =  readString("Please Enter client name? ");
     client.phone =  readString("Please Enter client phone? ");
     client.Balance = readNumber("Please Enter client balance? ");
+    return client;
 }
 
 string convertRecordToLine(stClientData clientData, string delim = "#//#"){
@@ -171,29 +160,85 @@ void deleteClient(){
     }
 }
 
+void updateClientData(string accountNumber, vector<stClientData> &vClients){
+    for(stClientData &client: vClients){
+        if(convertTextToLower(client.accountNumber) == convertTextToLower(accountNumber)){
+            client = readClientData(client);
+        }
+    }
+}
+
+void updateClient(){
+    header("Update Client Data");
+    string accountNumber = readString("please Enter Account number you want to update? ");
+    vector<stClientData> vClients = readDataFromFile(fileName); 
+    stClientData client;
+    if(findClient(accountNumber, client)){
+        char answer = readChar("Are you sure you want to update this account? \n");
+        if(tolower(answer) == 'y'){
+            updateClientData(accountNumber,vClients);
+            saveClientsToFile(vClients);
+            cout << "Account Updated successfully :)";
+            vClients = readDataFromFile(fileName);
+        }
+    }else{
+        cout << "The Account you're looking for not exist or already deleted";
+    }
+}
+
+void showMenuScreen();
+
+void backToMenu(){
+    cout << "Press any key to go back to the Menu :)";
+    system("pause>0");
+    showMenuScreen();
+}
+
 short chooseFromMenu(short number){
     switch ((enOptions) number){
         case enOptions::SHOW: 
             printClientsData();
+            backToMenu();
             break;  
-        case enOptions::ADD:
+            case enOptions::ADD:
             addNewClient();
+            backToMenu();
             break;
-        case enOptions::FIND:
+            case enOptions::FIND:
             findClient();
+            backToMenu();
             break;
-        case enOptions::DELETE:
+            case enOptions::DELETE:
             deleteClient();
+            backToMenu();
             break;
-    
+            case enOptions::UPDATE:
+            updateClient();
+            backToMenu();
+            break;
+        case enOptions::EXIST: 
+            cout << "Good Bye :(" << endl;
         default:
             break;
     }
 }
 
-int main(){
-    showMenuScreen();
+void showMenuScreen(){
+    cout <<"==================================================\n";
+    cout << "\t\tMain Menu Screen\n";
+    cout <<"==================================================\n";
+    cout << "\t[1] Show Client List.\n"
+            "\t[2] Add New Client.\n"
+            "\t[3] Delete Client.\n"
+            "\t[4] Update Client Info.\n"
+            "\t[5] Find Client.\n"
+            "\t[6] Exist." << endl;
+    cout <<"==================================================\n";
     short chosenOption = readNumber("Choose what do you want to do? [1 to 6]?");
     chooseFromMenu(chosenOption);
+}
+
+int main(){
+    showMenuScreen();
     return 0;
 }
