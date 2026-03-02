@@ -968,7 +968,7 @@ string convetTextToUpper(string text){
     return text;
 }
 
-string convetTextToLower(string text){
+string convertTextToLower(string text){
     for(short i = 0; i < text.length(); i++){
         text[i] = tolower(text[i]);
     }

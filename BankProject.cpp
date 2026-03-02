@@ -55,11 +55,9 @@ void saveLineToFile(string line){
     }
 }
 
-
 void header(string headerTxt){
     cout << "====================================================\n";
     cout << "=================" << headerTxt << "================\n";
-    cout << "====================================================\n\n";
 }
 
 void addNewClient(){
@@ -96,6 +94,14 @@ vector<stClientData> readDataFromFile(string fileName){
     return vClients;
 }
 
+void printClientData(stClientData client){
+    cout << "| " << left << setw(20) <<  client.accountNumber;
+    cout << "| " << left << setw(10) <<  client.pinCode;
+    cout << "| " << left << setw(35) <<  client.name;
+    cout << "| " << left << setw(15) <<  client.phone;
+    cout << "| " << left << setw(15) <<  client.Balance;   
+}
+
 void printClientsData(){
     header("Show Client Data");
     vector<stClientData> vClients = readDataFromFile(fileName);
@@ -104,14 +110,64 @@ void printClientsData(){
         cout << "| " << left << setw(35) << "Name";
         cout << "| " << left << setw(15) << "Phone";
         cout << "| " << left << setw(15) << "Balance";
-        cout << "\n---------------------------------------------------------------------\n";
+        cout << "\n--------------------------------------------------------------------------------------------------\n";
     for(stClientData &client: vClients){
-        cout << "| " << left << setw(20) <<  client.accountNumber;
-        cout << "| " << left << setw(10) <<  client.pinCode;
-        cout << "| " << left << setw(35) <<  client.name;
-        cout << "| " << left << setw(15) <<  client.phone;
-        cout << "| " << left << setw(15) <<  client.Balance;
+        printClientData(client);
         cout << endl;
+    }
+}
+
+bool findClient(string accountNumber = readString("please Enter Account number you're looking for? "), stClientData client = {}){
+    vector<stClientData> vClients = readDataFromFile(fileName);
+    for(stClientData &client: vClients){
+        if(convertTextToLower(client.accountNumber) == convertTextToLower(accountNumber)){
+            header("Client Data");
+            printClientData(client);
+            cout << endl;
+            client = client;
+            return true;
+        }
+    }
+    return false;
+
+}
+
+void saveClientsToFile(vector<stClientData> vClients){
+    fstream file; 
+    file.open(fileName, ios::out);
+    if(file.is_open()){
+        for(stClientData &client: vClients){
+            if(!client.markforDeletion){
+                string line = convertRecordToLine(client);
+                file << line << endl;
+            }
+        }
+        file.close();
+    }
+}
+
+void markClientForDeletion(string accountNumber, vector<stClientData> &vClients){
+    for(stClientData &client: vClients){
+        if(convertTextToLower(client.accountNumber) == convertTextToLower(accountNumber)){
+            client.markforDeletion = true;
+        }
+    }
+}
+
+void deleteClient(){
+    string accountNumber = readString("please Enter Account number you want to delete? ");
+    vector<stClientData> vClients = readDataFromFile(fileName); 
+    stClientData client;
+    if(findClient(accountNumber, client)){
+        char answer = readChar("Are you sure you want to delete this account? \n");
+        if(tolower(answer) == 'y'){
+            markClientForDeletion(accountNumber,vClients);
+            saveClientsToFile(vClients);
+            cout << "Account Deleted successfully :)";
+            vClients = readDataFromFile(fileName);
+        }
+    }else{
+        cout << "The Account you're looking for not exist or already deleted";
     }
 }
 
@@ -119,9 +175,15 @@ short chooseFromMenu(short number){
     switch ((enOptions) number){
         case enOptions::SHOW: 
             printClientsData();
-            break;
+            break;  
         case enOptions::ADD:
             addNewClient();
+            break;
+        case enOptions::FIND:
+            findClient();
+            break;
+        case enOptions::DELETE:
+            deleteClient();
             break;
     
         default:
