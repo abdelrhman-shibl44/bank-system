@@ -16,45 +16,18 @@ struct stClientData {
 };
 const string fileName = "Clients.txt";
 
-stClientData readClientData(stClientData &client){
-    client.accountNumber =  readString("Please Enter client account number? ");
-    client.pinCode =  readString("Please Enter client pinCode? ");
-    client.name =  readString("Please Enter client name? ");
-    client.phone =  readString("Please Enter client phone? ");
-    client.Balance = readNumber("Please Enter client balance? ");
-    return client;
-}
 
-string convertRecordToLine(stClientData clientData, string delim = "#//#"){
-    return(
-        clientData.accountNumber + delim +
-        clientData.pinCode + delim +
-        clientData.name + delim + 
-        clientData.phone + delim +
-        to_string(clientData.Balance)
-    );
-}
-
-void saveLineToFile(string line){
-    fstream file;
-    file.open(fileName, ios::out | ios::app);
-    if(file.is_open()){
-        file << line << endl;
-        file.close();
-    }
+void printClientData(stClientData client){
+    cout << "| " << left << setw(20) <<  client.accountNumber;
+    cout << "| " << left << setw(10) <<  client.pinCode;
+    cout << "| " << left << setw(35) <<  client.name;
+    cout << "| " << left << setw(15) <<  client.phone;
+    cout << "| " << left << setw(15) <<  client.Balance;   
 }
 
 void header(string headerTxt){
     cout << "====================================================\n";
     cout << "=================" << headerTxt << "================\n";
-}
-
-void addNewClient(){
-    header("Add New Client :)");
-    stClientData client;
-    readClientData(client);
-    saveLineToFile(convertRecordToLine(client));
-    cout << "Client has been added successfully\n";
 }
 
 stClientData convertLineToRecord(string line){
@@ -81,14 +54,6 @@ vector<stClientData> readDataFromFile(string fileName){
         file.close();
     }
     return vClients;
-}
-
-void printClientData(stClientData client){
-    cout << "| " << left << setw(20) <<  client.accountNumber;
-    cout << "| " << left << setw(10) <<  client.pinCode;
-    cout << "| " << left << setw(35) <<  client.name;
-    cout << "| " << left << setw(15) <<  client.phone;
-    cout << "| " << left << setw(15) <<  client.Balance;   
 }
 
 void printClientsData(){
@@ -118,7 +83,46 @@ bool findClient(string accountNumber = readString("please Enter Account number y
         }
     }
     return false;
+}
 
+stClientData readClientData(stClientData &client){
+    client.accountNumber =  readString("Please Enter client account number? ");
+    while(findClient(client.accountNumber, client)){
+        cout << "The Account number is already exist, Please try another one\n";
+        client.accountNumber =  readString("Please Enter client account number? ");
+    }
+    client.pinCode =  readString("Please Enter client pinCode? ");
+    client.name =  readString("Please Enter client name? ");
+    client.phone =  readString("Please Enter client phone? ");
+    client.Balance = readNumber("Please Enter client balance? ");
+    return client;
+}
+
+string convertRecordToLine(stClientData clientData, string delim = "#//#"){
+    return(
+        clientData.accountNumber + delim +
+        clientData.pinCode + delim +
+        clientData.name + delim + 
+        clientData.phone + delim +
+        to_string(clientData.Balance)
+    );
+}
+
+void saveLineToFile(string line){
+    fstream file;
+    file.open(fileName, ios::out | ios::app);
+    if(file.is_open()){
+        file << line << endl;
+        file.close();
+    }
+}
+
+void addNewClient(){
+    header("Add New Client :)");
+    stClientData client;
+    readClientData(client);
+    saveLineToFile(convertRecordToLine(client));
+    cout << "Client has been added successfully\n";
 }
 
 void saveClientsToFile(vector<stClientData> vClients){
