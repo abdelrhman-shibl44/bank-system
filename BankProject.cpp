@@ -207,15 +207,28 @@ void addDeposite(string accountNumber, double amount, vector<stClientData> &vCli
         }
     }
 }
-void deposit(){
+
+void addWithdraw(string accountNumber, double amount, vector<stClientData> &vClients){
+    for(stClientData &client: vClients){
+        if(convertTextToLower(client.accountNumber) == convertTextToLower(accountNumber)){  
+            client.Balance = client.Balance - amount;
+        }
+    }
+}
+
+void transaction(string trans){
     header("Deposit Screen");
     string accountNumber = readString("please enter account number? ");
     vector<stClientData> vClients = readDataFromFile(fileName);
     if(findClient(accountNumber)){
-        double depositAmount = readNumber("Please enter deposite amount? ");
+        printf("Please enter %s amount: ", trans.c_str());
+        double depositAmount =  readNumber("");
         char answer = readChar("Are you sure you want to perform this transaction? ");
         if(tolower(answer) == 'y'){
-            addDeposite(accountNumber, depositAmount, vClients);
+            trans == "deposit" ? 
+            addDeposite(accountNumber, depositAmount, vClients)
+            : addWithdraw(accountNumber, depositAmount, vClients);
+
             saveClientsToFile(vClients);
             cout << "Deposit made successfully :)" << endl;
         }
@@ -224,15 +237,30 @@ void deposit(){
     }
 }
 
+void totalBalance(){
+    header("Total Balance Screen");
+    vector<stClientData> vClients = readDataFromFile(fileName);
+    double totalBalance = 0;
+
+    for(stClientData &client: vClients){
+        totalBalance += client.Balance;
+    }
+    
+    printClientsData();
+    cout << "\n\t\t\t\tTotal Balance is: " << totalBalance << endl;;
+
+}
 
 void chooseTransaction(short number){
     switch ((enTransactions) number){
         case enTransactions::DEPOSIT :
-            deposit();
+            transaction("deposit");
             break;
         case enTransactions::WITHDRAW :
+            transaction("withdraw");
             break;
         case enTransactions::TOTALBALANCE :
+            totalBalance();
             break;
         case enTransactions::MAINMENU :
             showMenuScreen();
@@ -300,7 +328,7 @@ void showMenuScreen(){
             "\t[6] Transactions.\n"
             "\t[7] Exist." << endl;
     cout <<"==================================================\n";
-    short chosenOption = readNumber("Choose what do you want to do? [1 to 6]?");
+    short chosenOption = readNumber("Choose what do you want to do? [1 to 6]? ");
     chooseFromMenu(chosenOption);
 }
 
