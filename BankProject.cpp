@@ -16,6 +16,12 @@ struct stClientData {
     bool markforDeletion = false;
 };
 
+struct stUserData {
+    string username;
+    string password;
+    string permissions;
+};
+
 const string fileName = "Clients.txt";
 
 void printClientData(stClientData client){
@@ -42,6 +48,14 @@ stClientData convertLineToRecord(string line){
     return clientData;
 }
 
+stUserData convertUserLineToRecord(string line){
+    stUserData userData;
+    vector<string> user = split(line, "#//#");
+    userData.username = user[0];
+    userData.password = user[1];
+    userData.permissions = user[2];
+    return userData;   
+}
 vector<stClientData> readDataFromFile(string fileName){
     fstream file;
     vector<stClientData> vClients;
@@ -208,6 +222,7 @@ void updateClient(){
 }
 
 void showMenuScreen();
+bool showLoginScreen();
 
 void backToMenu(){
     cout << "Press any key to go back to the Menu :)" << endl;
@@ -335,8 +350,6 @@ short chooseFromMenu(short number){
             showTransactionMenu();
             backToMenu();
             break;
-        case enOptions::EXIST: 
-            cout << "Good Bye :(" << endl;
         default:
             break;
     }
@@ -353,13 +366,56 @@ void showMenuScreen(){
             "\t[4] Update Client Info.\n"
             "\t[5] Find Client.\n"
             "\t[6] Transactions.\n"
-            "\t[7] Exist." << endl;
+            "\t[7] Logout." << endl;
     cout <<"==================================================\n";
     short chosenOption = readNumber("Choose what do you want to do? [1 to 6]? ");
+    if(chosenOption == enOptions::EXIST) return;
     chooseFromMenu(chosenOption);
 }
 
+vector<stUserData> getUsers(){
+    fstream file;
+    vector<stUserData> vUsers;
+    file.open("users.txt", ios::in);
+    if(file.is_open()){
+        string line;
+        while(getline(file, line)){
+            stUserData userData =  convertUserLineToRecord(line);
+            vUsers.push_back(userData);
+        }
+        file.close();
+    }
+    return vUsers;
+}
+
+bool isUserExist(string username, string password){
+    vector<stUserData> users =  getUsers();
+    for(stUserData &user: users){
+        if(user.username == username && user.password == password){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool showLoginScreen(){
+    system("cls");
+    header("Login Screen");
+    do{
+        string username = readString("Enter Username? ");
+        string password = readString("Enter Password? ");
+        if(isUserExist(username, password)){
+            return true; 
+        }else{
+            cout << "Invalid Credential :(\n";
+        }
+    }while(true);
+    return true;
+}
+
 int main(){
-    showMenuScreen();
+    while (showLoginScreen()){   
+        showMenuScreen();
+    }
     return 0;
 }
